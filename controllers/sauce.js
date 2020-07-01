@@ -71,6 +71,14 @@ exports.likeSauce = (req, res, next) => {
           .then(() => res.status(201).json({ message: 'Sauce likée !'}))
           .catch(error => res.status(400).json({ error }));
         }
+        else if(like == -1){ // s'il aime pas la suace
+          Sauce.updateOne({
+            $inc: { dislikes: 1 }, // incrementer la valeur de dislikes
+            $addToSet: { usersDisliked: currentUserId }, // ajouter son userId dans la liste de usersDisliked
+          })
+          .then(() => res.status(201).json({ message: 'Sauce non likée !'}))
+          .catch(error => res.status(400).json({ error }));
+        }
       }
     })
 };
