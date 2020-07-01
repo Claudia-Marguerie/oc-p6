@@ -79,6 +79,24 @@ exports.likeSauce = (req, res, next) => {
           .then(() => res.status(201).json({ message: 'Sauce non likée !'}))
           .catch(error => res.status(400).json({ error }));
         }
+      } else if(like == 0) { // si l'utilisatuer annule son avis
+        if(sauce.usersLiked.includes(currentUserId)){ // si l'avis précédent était positif
+          Sauce.updateOne({
+            $inc: { likes: -1 }, // la valeur de likes est disminuée d'1
+            $pull: { usersLiked: currentUserId }, // et on efface son userId de la liste de usersLiked
+          })
+          .then(() => res.status(201).json({ message: 'like annulé !'}))
+          .catch(error => res.status(400).json({ error }));   
+        }
+        if(sauce.usersDisliked.includes(currentUserId)){ // si l'avis précédent était négatif
+          Sauce.updateOne({
+            $inc: { dislikes: -1 }, /// la valeur de dislikes est disminuée d'1
+            $pull: { usersDisliked: currentUserId }, // et on efface son userId de la liste de usersDisliked
+          })
+          .then(() => res.status(201).json({ message: 'Non like annulé !'}))
+          .catch(error => res.status(400).json({ error }));   
+        }
       }
     })
+    .catch(error => res.status(400).json({ error }));
 };
