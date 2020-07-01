@@ -59,12 +59,12 @@ exports.getOneSauce = (req, res, next) => {
 exports.likeSauce = (req, res, next) => {
   const like = req.body.like;
   const currentUserId = req.body.userId;
-  const sauceId = req.body.id;
-  Sauce.findOne({ id: sauceId })
+  const sauceId = req.params.id;
+  Sauce.findOne({ _id: sauceId })
     .then(sauce => {
       if(!(sauce.usersLiked.includes(currentUserId) || sauce.usersDisliked.includes(currentUserId))){ // si l'utilisateur n'a pas encore donné son avis: l'id de l'utilisateur n'existe pas dans la liste usersLiked ou usersDisliked de la sauce
         if(like == 1){ // si il aime la sauce
-          Sauce.updateOne({ 
+          Sauce.updateOne({ _id: sauceId }, { 
             $inc: { likes: 1 }, // incrementer la valeur de likes
             $addToSet: { usersLiked: currentUserId }, // ajouter son userId dans la liste de usersLiked
           })
@@ -72,16 +72,16 @@ exports.likeSauce = (req, res, next) => {
           .catch(error => res.status(400).json({ error }));
         }
         else if(like == -1){ // s'il aime pas la suace
-          Sauce.updateOne({
+          Sauce.updateOne({ _id: sauceId }, {
             $inc: { dislikes: 1 }, // incrementer la valeur de dislikes
             $addToSet: { usersDisliked: currentUserId }, // ajouter son userId dans la liste de usersDisliked
           })
-          .then(() => res.status(201).json({ message: 'Sauce non likée !'}))
+          .then(() => res.status(201).json({ message: 'Like annulé !'}))
           .catch(error => res.status(400).json({ error }));
         }
       } else if(like == 0) { // si l'utilisatuer annule son avis
         if(sauce.usersLiked.includes(currentUserId)){ // si l'avis précédent était positif
-          Sauce.updateOne({
+          Sauce.updateOne({ _id: sauceId }, {
             $inc: { likes: -1 }, // la valeur de likes est disminuée d'1
             $pull: { usersLiked: currentUserId }, // et on efface son userId de la liste de usersLiked
           })
@@ -89,14 +89,48 @@ exports.likeSauce = (req, res, next) => {
           .catch(error => res.status(400).json({ error }));   
         }
         if(sauce.usersDisliked.includes(currentUserId)){ // si l'avis précédent était négatif
-          Sauce.updateOne({
+          Sauce.updateOne({ _id: sauceId }, {
             $inc: { dislikes: -1 }, /// la valeur de dislikes est disminuée d'1
             $pull: { usersDisliked: currentUserId }, // et on efface son userId de la liste de usersDisliked
           })
           .then(() => res.status(201).json({ message: 'Non like annulé !'}))
           .catch(error => res.status(400).json({ error }));   
         }
-      }
+      } 
+      //  non utilisé par le frontend
+      //   else if(sauce.usersLiked.includes(currentUserId)){ // si l'utilisateur avait liké précédemment
+      //   if(like == -1) { // s'il aime pas la sauce
+      //     Sauce.updateOne({ _id: sauceId }, {
+      //       $inc: { dislikes: +1 }, /// la valeur de dislikes est augmentée d'1
+      //       $addToSet: { usersDisliked: currentUserId }, // et on ajoute son userId de la liste de usersDisliked
+      //     })
+      //     .then(() => res.status(201).json({ message: 'like annulé !'}))
+      //     .catch(error => res.status(400).json({ error })); 
+      //   }
+      //   else if(like == 1){ // s'il aime encore une fois la sauce
+      //     Sauce.updateOne({ _id: sauceId }, {
+      //       //$inc: { likes: 0 }, /// la valeur de likes n'est pas incrémenté
+      //     })
+      //     .then(() => res.status(201).json({ message: 'Sauce déjà likée !'}))
+      //     .catch(error => res.status(400).json({ error })); 
+      //   }
+      // } else if(sauce.usersDisliked.includes(currentUserId)){ // si l'utilisateur a précédemment liké
+      //   if(like == -1){ // s'il aime pas encore une fois la sauce
+      //     Sauce.updateOne({ _id: sauceId }, {
+      //       //$inc: { dislikes: 0 }, // la valeur de dislikes n'est pas incrémenté
+      //     })
+      //     .then(() => res.status(201).json({ message: 'Sauce déjà non likée !'}))
+      //     .catch(error => res.status(400).json({ error })); 
+      //   }
+      //   else if(like == 1){ //s'il aime la sauce
+      //     Sauce.updateOne({ _id: sauceId }, {
+      //       $inc: { likes: +1 }, // la valeur de likes est augmenté d'1
+      //       $addToSet: { usersLiked: currentUserId }, // et on ajout son userId a la liste usersLiked
+      //     })
+      //     .then(() => res.status(201).json({ message: 'Sauce likée !'}))
+      //     .catch(error => res.status(400).json({ error })); 
+      //   }
+      // }
     })
     .catch(error => res.status(400).json({ error }));
 };
