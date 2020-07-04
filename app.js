@@ -7,12 +7,13 @@ const app = express();
 const sauceRoutes = require('./routes/sauce');
 const userRoutes = require('./routes/user');
 
-mongoose.connect('mongodb+srv://claudia:compu2020@cluster0-zqstk.mongodb.net/test?retryWrites=true&w=majority',
+require('dotenv').config()
+
+mongoose.connect('mongodb+srv://'+ process.env.DB_USER + ':' + process.env.DB_PASS + '@' + process.env.DB_HOST + '/test?retryWrites=true&w=majority',
   { useNewUrlParser: true,
     useUnifiedTopology: true })
   .then(() => console.log('Connexion à MongoDB réussie !'))
   .catch(() => console.log('Connexion à MongoDB échouée !'));
-
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
